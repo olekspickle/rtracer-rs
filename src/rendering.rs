@@ -4,7 +4,7 @@ use num_traits::identities::Zero;
 
 pub struct Ray {
     pub origin: Point,
-    pub direction: Vec3,
+    pub direction: Vec3<f32>,
 }
 
 impl Ray {
