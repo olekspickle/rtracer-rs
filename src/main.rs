@@ -1,14 +1,12 @@
-use std::{boxed::Box, path::Path, sync::Arc};
+use std::{path::Path};
 
 use image::{DynamicImage, ImageDecoder};
-use serde_derive;
-use vek;
 
 mod my_macro;
-mod ray_store;
+mod entities;
 mod rendering;
 
-use ray_store::{Color, Point, Scene, Sphere};
+use entities::{Color, Point, Scene, Sphere};
 
 fn main() {
     let scene = Scene::default();
