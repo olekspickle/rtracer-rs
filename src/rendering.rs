@@ -6,8 +6,8 @@ pub struct Ray {
     pub direction: Vec3<f64>,
 }
 
-impl Ray {
-    pub fn create_prime(x: u32, y: u32, scene: &Scene) -> Ray {
+impl Default for Ray {
+    fn default() -> Ray {
         Ray {
             origin: Point::zero(),
             direction: Vec3::zero(),
@@ -15,21 +15,23 @@ impl Ray {
     }
 }
 
-pub fn create_prime(x: u32, y: u32, scene: &Scene) -> Ray {
-    let fov_adjustment = (scene.fov.to_radians() / 2.0).tan();
-    // take non-quadratic images into account
-    let aspect_ratio = (scene.width as f64) / (scene.height as f64);
-    let sensor_x =
-        (((x as f64 + 0.5) / scene.width as f64) * 2.0 - 1.0 * aspect_ratio) * fov_adjustment;
-    let sensor_y = 1.0 - ((y as f64 + 0.5) / scene.height as f64) * 2.0;
+impl Ray{
+    pub fn create_prime(x: u32, y: u32, scene: &Scene) -> Ray {
+        let fov_adjustment = (scene.fov.to_radians() / 2.0).tan();
+        // take non-quadratic images into account
+        let aspect_ratio = (scene.width as f64) / (scene.height as f64);
+        let sensor_x =
+            (((x as f64 + 0.5) / scene.width as f64) * 2.0 - 1.0 * aspect_ratio) * fov_adjustment;
+        let sensor_y = 1.0 - ((y as f64 + 0.5) / scene.height as f64) * 2.0;
 
-    Ray {
-        origin: Point::zero(),
-        direction: Vec3 {
-            x: sensor_x,
-            y: sensor_y,
-            z: -1.0,
-        },
+        Ray {
+            origin: Point::zero(),
+            direction: Vec3 {
+                x: sensor_x,
+                y: sensor_y,
+                z: -1.0,
+            },
+        }
     }
 }
 
@@ -50,6 +52,7 @@ impl Intersectable for Sphere {
         // vek macros magic explained ^
         let d2 = l.dot(l) - (adj2 * adj2);
 
+        //pythagorean theorem
         //If that length-squared is less than radius squared, the ray intersects the sphere
         d2 < (self.radius * self.radius)
     }
