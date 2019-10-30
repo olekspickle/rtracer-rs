@@ -3,11 +3,12 @@ use std::path::Path;
 
 mod entities;
 mod fractal;
-mod my_macro;
 mod rendering;
+mod utils;
 
 use entities::{Color, Point, Scene, Sphere};
 use fractal::Fractal;
+use utils::{print_green, print_italic};
 
 fn main() {
     let scene = Scene::default();
@@ -19,10 +20,10 @@ fn main() {
 }
 
 pub fn save_image(img: DynamicImage, p: &Path) {
-    println!("saving image to {:?} ", p);
+    print_italic(&format!("saving as {:?}", p));
 
     match img.save(p) {
-        Ok(_) => println!("saved successfully"),
+        Ok(_) => print_green("success!"),
         Err(err) => println!("failed to save {:?}", err),
     }
 }
