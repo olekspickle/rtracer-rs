@@ -135,7 +135,7 @@ impl Default for Scene {
                 radius: 1.0,
                 color: Color {
                     red: 0.4,
-                    green: 1.0,
+                    green: 0.7,
                     blue: 0.4,
                 },
             },
