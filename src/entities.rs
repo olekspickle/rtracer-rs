@@ -3,6 +3,15 @@ use num_traits::identities::Zero;
 use serde_derive::{Deserialize, Serialize};
 use std::ops::Add;
 
+#[repr(C)]
+#[derive(Debug)]
+pub struct ViewBlock {
+    pub x: u32,
+    pub y: u32,
+    pub width: u32,
+    pub height: u32,
+}
+
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Color {
     pub red: f32,
@@ -23,6 +32,7 @@ pub struct Scene {
     pub height: u32,
     pub fov: f64,
     pub elements: Vec<Element>,
+    pub max_recursion_depth: u32,
 }
 
 impl Add<Point> for Point {
