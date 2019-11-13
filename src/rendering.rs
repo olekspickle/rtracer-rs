@@ -1,17 +1,23 @@
-use crate::entities::{Point, Element, Plane, Scene,Intersection, Sphere};
+use crate::entities::{Element, ViewBlock, Color, Plane, Scene,Intersection, Sphere};
 use image::{DynamicImage, GenericImage, Pixel, Rgba};
-use vek::Vec3;
+use crate::{point::Point, vector::Vector3};
+
+const BLACK: Color = Color {
+    red: 0.0,
+    green: 0.0,
+    blue: 0.0,
+};
 
 pub struct Ray {
     pub origin: Point,
-    pub direction: Vec3<f64>,
+    pub direction: Vector3,
 }
 
 impl Default for Ray {
     fn default() -> Ray {
         Ray {
             origin: Point::zero(),
-            direction: Vec3::zero(),
+            direction: Vector3::zero(),
         }
     }
 }
@@ -26,7 +32,7 @@ impl Ray {
         let sensor_y = (1.0 - ((y as f64 + 0.5) / scene.height as f64) * 2.0) * fov_adjustment;
         Ray {
             origin: Point::zero(),
-            direction: Vec3 {
+            direction: Vector3 {
                 x: sensor_x,
                 y: sensor_y,
                 z: -1.0,
@@ -49,8 +55,8 @@ impl Intersectable for Element {
 }
 impl Intersectable for Plane {
     fn intersect(&self, ray: &Ray) -> Option<f64> {
-        let normal = self.normal;
-        let denom = normal.dot(ray.direction);
+        let normal = &self.normal;
+        let denom = normal.dot(&ray.direction);
         if denom > 1e-6 {
             let v = self.p0 - ray.origin;
             let distance = v.dot(normal) / denom;
@@ -64,14 +70,11 @@ impl Intersectable for Plane {
 impl Intersectable for Sphere {
     fn intersect(&self, ray: &Ray) -> Option<f64> {
         //Create a line segment between the ray origin and the center of the sphere
-        let l: Vec3<f64> = self.center - ray.origin;
+        let l: Vector3 = self.center - ray.origin;
         //Use l as a hypotenuse and find the length of the adjacent side
-        let adj = l.dot(ray.direction);
+        let adj = l.dot(&ray.direction);
         //Find the length-squared of the opposite side
-        // dot(self, v: Vec3) -> (self * v).sum()
-        // sum(self) -> self.into_iter().sum()
-        // vek macros magic explained ^
-        let d2 = l.dot(l) - (adj * adj);
+        let d2 = l.dot(&l) - (adj * adj);
         let radius2 = self.radius * self.radius;
         if d2 > radius2 {
             return None;
@@ -90,35 +93,32 @@ impl Intersectable for Sphere {
 }
 
 impl Scene {
-    pub fn render_simple_sphere(&self) -> DynamicImage {
-        let mut image = DynamicImage::new_rgb8(self.width, self.height);
-        let background = Rgba::from_channels(0, 0, 0, 0);
-        let sphere_color = Rgba::from_channels(
-            (self.sphere.color.red * 255.0) as u8,
-            (self.sphere.color.green * 255.0) as u8,
-            (self.sphere.color.blue * 255.0) as u8,
-            0,
-        );
-        
-        for x in 0..self.width {
-            for y in 0..self.height {   
-                let mut ray = Ray::create_prime(x, y, self);
-                ray.direction.normalize();
-
-                if self.sphere.intersect(&ray) {
-                    image.put_pixel(x, y, sphere_color)
-                } else {
-                    image.put_pixel(x, y, background);
-                }
+    pub fn cast_ray(&self, ray: &Ray, depth: u32) -> Color {
+        if depth >= self.max_recursion_depth {
+            return BLACK;
+        }
+    
+        let intersection = self.trace(&ray);
+        intersection.map(|i| BLACK)
+            .unwrap_or(BLACK)
+    }
+    pub fn render(&self, block: &ViewBlock) -> DynamicImage {
+        let mut image = DynamicImage::new_rgb8(block.width, block.height);
+        for y in 0..block.height {
+            for x in 0..block.width {
+                let ray = Ray::create_prime(x + block.x, y + block.y, self);
+                image.put_pixel(x, y, Self::cast_ray(self, &ray, 0).to_rgba());
             }
         }
         image
     }
-
     pub fn trace(&self, ray: &Ray) -> Option<Intersection> {
-        self.spheres
+        self.elements
             .iter()
             .filter_map(|s| s.intersect(ray).map(|d| Intersection::new(d, s)))
             .min_by(|i1, i2| i1.distance.partial_cmp(&i2.distance).unwrap())
+    }
+    pub fn spheres(self) -> Scene{
+        
     }
 }
