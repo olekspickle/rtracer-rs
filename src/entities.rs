@@ -1,7 +1,5 @@
 use crate::{point::Point, vector::Vector3};
-use num_traits::identities::Zero;
 use serde_derive::{Deserialize, Serialize};
-use std::ops::Add;
 
 #[repr(C)]
 #[derive(Debug)]
@@ -35,35 +33,6 @@ pub struct Scene {
     pub max_recursion_depth: u32,
 }
 
-impl Add<Point> for Point {
-    type Output = Point;
-    fn add(self, p: Point) -> Point {
-        Point {
-            x: self.x + p.x,
-            y: self.y + p.y,
-            z: self.z + p.z,
-        }
-    }
-}
-
-impl Zero for Point {
-    fn zero() -> Point {
-        Point {
-            x: 0.0f64,
-            y: 0.0f64,
-            z: 0.0f64,
-        }
-    }
-    fn is_zero(&self) -> bool {
-        let Point { x, y, z } = self;
-
-        if *x == 0f64 || *y == 0f64 || *z == 0f64 {
-            true
-        } else {
-            false
-        }
-    }
-}
 
 pub struct Intersection<'a> {
     pub distance: f64,
@@ -97,7 +66,12 @@ impl Element {
     }
 }
 
-
 impl Color {
-    
+    pub fn new(red: f32, green: f32, blue: f32) -> Color {
+        Color {
+            red: red,
+            green: green,
+            blue: blue,
+        }
+    }
 }
