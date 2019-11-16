@@ -74,7 +74,12 @@ impl Color {
             blue: blue,
         }
     }
-    pub fn to_rgba(self) -> Rgba<f32> {
-        Rgba::from_channels(self.red, self.green, self.blue, 0.0)
+    pub fn to_rgba(self) -> Rgba<u8> {
+        Rgba::from_channels(
+            (self.red * 255.0) as u8,
+            (self.green * 255.0) as u8,
+            (self.blue * 255.0) as u8,
+            0,
+        )
     }
 }
