@@ -1,6 +1,6 @@
 //! An example of generating julia fractals.
-use crate::utils::{print_green, print_italic};
-use image::{ImageBuffer, Rgb};
+use crate::{save_image};
+use image::{ImageBuffer, DynamicImage, Rgb};
 use num_complex;
 use std::path::Path;
 
@@ -48,9 +48,7 @@ impl Fractal {
             }
         }
 
-        print_italic(&format!("saving as {:?}...", p));
-        imgbuf.save(p).unwrap();
-        print_green("success!");
+        save_image(DynamicImage::ImageRgb8(imgbuf), p);
     }
 }
 
