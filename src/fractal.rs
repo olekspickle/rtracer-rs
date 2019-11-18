@@ -1,6 +1,6 @@
 //! An example of generating julia fractals.
-use crate::{save_image};
-use image::{ImageBuffer, DynamicImage, Rgb};
+use crate::save_image;
+use image::{DynamicImage, ImageBuffer, Rgb};
 use num_complex;
 use std::path::Path;
 
