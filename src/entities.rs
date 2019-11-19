@@ -50,7 +50,7 @@ impl<'a> Intersection<'a> {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Plane {
-    pub p0: Point,
+    pub origin: Point,
     pub normal: Vector3,
     pub color: Color,
 }
@@ -118,31 +118,5 @@ impl Scene {
             .iter()
             .filter_map(|e| e.intersect(ray).map(|d| Intersection::new(d, e)))
             .min_by(|i1, i2| i1.distance.partial_cmp(&i2.distance).unwrap())
-    }
-
-    pub fn spheres() -> Scene {
-        let s_1 = Element::Sphere(Sphere {
-            center: Point::new(0.0, 0.0, -5.0),
-            radius: 2.0,
-            color: Color::new(0.4, 0.7, 0.4),
-        });
-        let s_2 = Element::Sphere(Sphere {
-            center: Point::new(-5.0, 1.0, -5.0),
-            radius: 1.0,
-            color: Color::new(0.4, 0.4, 0.7),
-        });
-        let s_3 = Element::Sphere(Sphere {
-            center: Point::new(5.0, 0.0, -5.0),
-            radius: 3.0,
-            color: Color::new(0.7, 0.4, 0.4),
-        });
-
-        Scene {
-            width: 800,
-            height: 600,
-            fov: 90.0,
-            elements: vec![s_1, s_2, s_3],
-            max_recursion_depth: 0,
-        }
     }
 }
