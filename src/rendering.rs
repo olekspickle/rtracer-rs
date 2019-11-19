@@ -58,7 +58,7 @@ impl Intersectable for Plane {
         let normal = &self.normal;
         let denom = normal.dot(&ray.direction);
         if denom > 1e-6 {
-            let v = self.p0 - ray.origin;
+            let v = self.origin - ray.origin;
             let distance = v.dot(normal) / denom;
             if distance >= 0.0 {
                 return Some(distance);
