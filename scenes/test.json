@@ -105,5 +105,6 @@
     },
     "intensity": 20.0
   },
-  "max_recursion_depth": 1
+  "max_recursion_depth": 1,
+  "shadow_bias": 0.0001
 }
