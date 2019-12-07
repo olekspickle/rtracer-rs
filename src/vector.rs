@@ -1,7 +1,6 @@
 use std::ops::{Add, Sub, Mul, Neg};
 use serde_derive::{Deserialize, Serialize};
-// use serde::{Deserializer};
-
+use serde::{Deserialize, Deserializer};
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 #[repr(C)]
@@ -10,7 +9,7 @@ pub struct Vector3 {
     pub y: f64,
     pub z: f64,
 }
-impl Vector3 {
+impl <'de>Vector3 {
     pub fn zero() -> Vector3 {
         Vector3::from_one(0.0)
     }
@@ -48,12 +47,12 @@ impl Vector3 {
         }
     }
 
-    // pub fn deserialize_normalized<D>(deserializer: D) -> Result<Vector3, D::Error>
-    //     where D: Deserializer<'de>
-    // {
-    //     let v3 = Vector3::deserialize(deserializer)?;
-    //     Ok(v3.normalize())
-    // }
+    pub fn deserialize_normalized<D>(deserializer: D) -> Result<Vector3, D::Error>
+        where D: Deserializer<'de>
+    {
+        let v3 = Vector3::deserialize(deserializer)?;
+        Ok(v3.normalize())
+    }
 }
 
 impl Add for Vector3 {
