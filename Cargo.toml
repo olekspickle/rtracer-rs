@@ -1,6 +1,6 @@
 [package]
 name = "rtracer-rs"
-version = "0.1.0"
+version = "0.0.4"
 authors = ["alekspickle <aleks.work2222@gmail.com>"]
 edition = "2018"
 
