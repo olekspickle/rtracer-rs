@@ -71,12 +71,12 @@
           "y": -1.0,
           "z": 0.0
         },
-        "color": {
-          "red": 0.5,
-          "green": 0.2,
-          "blue": 0.9
-        },
-        "albedo": 0.18
+        "material": {
+          "coloration": {
+            "Texture": "scenes/plane.png"
+          },
+          "albedo": 0.18
+        }
       }
     },
     {
@@ -96,7 +96,16 @@
           "green": 0.5,
           "blue": 0.1
         },
-        "albedo": 0.18
+        "material": {
+          "coloration": {
+            "Color": {
+              "red": 0.2,
+              "green": 0.3,
+              "blue": 1.0
+            }
+          },
+          "albedo": 0.38
+        }
       }
     }
   ],
