@@ -2,11 +2,12 @@
 
 [![v](https://img.shields.io/badge/v-0.0.5-blueviolet)]()
 ## ray tracer in rust
+[![raytracing example](/pics/example)]
 
 Thanks to amazing [criterion author](https://github.com/bheisler) for his raytraycing project!
 
-It turned out to be hell of a mutch bigger deal I initially thought it would. 
-Consider this a version update. 
+It turned out to be hell of a mutch bigger deal I initially thought it would.
+Consider this a version update.
 
 This stuff is hard for me personally without any background in rendering and
 basic understanding of linear transformations.
@@ -17,6 +18,7 @@ And this is great experience! <3
 2. Spheres on a plane
 3. Basic shadows
 4. Texturing: using vector products to calculate texture
+5. Reflections: basic implementation with recursive restriction.
 
 #### useful resourses
 [Scrathpixel](https://www.scratchapixel.com/index.php?redirect) is fantastic library!
