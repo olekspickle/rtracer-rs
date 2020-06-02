@@ -1,5 +1,5 @@
 //! [![v](https://img.shields.io/badge/v-0.0.5-blueviolet)]()
-//! ![raytracing example](/pics/example)
+//! ![raytracing example](/pics/example.png)
 //!
 //! Thanks to amazing [criterion author](https://github.com/bheisler) for his raytraycing project!
 //!
