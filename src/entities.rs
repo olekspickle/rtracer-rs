@@ -67,6 +67,16 @@ impl Mul<Color> for f32 {
     }
 }
 
+const GAMMA: f32 = 1.5;
+
+fn gamma_encode(linear: f32) -> f32 {
+    linear.powf(1.0 / GAMMA)
+}
+
+fn gamma_decode(encoded: f32) -> f32 {
+    encoded.powf(GAMMA)
+}
+
 impl Color {
     pub fn new(red: f32, green: f32, blue: f32) -> Color {
         Color {
@@ -77,17 +87,17 @@ impl Color {
     }
     pub fn to_rgba(self) -> Rgba<u8> {
         Rgba::from_channels(
-            (self.red * 255.0) as u8,
-            (self.green * 255.0) as u8,
-            (self.blue * 255.0) as u8,
+            (gamma_encode(self.red) * 255.0) as u8,
+            (gamma_encode(self.green) * 255.0) as u8,
+            (gamma_encode(self.blue) * 255.0) as u8,
             0,
         )
     }
     pub fn from_rgba(rgba: Rgba<u8>) -> Color {
         Color {
-            red: (rgba.0[0] as f32) / 255.0,
-            green: (rgba.0[1] as f32) / 255.0,
-            blue: (rgba.0[2] as f32) / 255.0,
+            red: gamma_decode((rgba.0[0] as f32) / 255.0),
+            green: gamma_decode((rgba.0[1] as f32) / 255.0),
+            blue: gamma_decode((rgba.0[2] as f32) / 255.0),
         }
     }
     pub fn clamp(&self) -> Color {
