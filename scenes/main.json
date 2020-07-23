@@ -1,6 +1,6 @@
 {
-  "width": 9000,
-  "height": 6000,
+  "width": 900,
+  "height": 600,
   "fov": 90.0,
   "elements": [
     {
@@ -48,9 +48,9 @@
     {
       "Sphere": {
         "center": {
-          "x": 2.5,
-          "y": 1.5,
-          "z": -4.0
+          "x": 2.0,
+          "y": 1.0,
+          "z": -3.5
         },
         "radius": 1.5,
         "material": {
@@ -135,9 +135,24 @@
     {
       "Spherical": {
         "position": {
+          "x": 0.5,
+          "y": 0.0,
+          "z": -4.0
+        },
+        "color": {
+          "red": 0.9,
+          "green": 0.1,
+          "blue": 0.1
+        },
+        "intensity": 4000.0
+      }
+    },
+    {
+      "Spherical": {
+        "position": {
           "x": -2.0,
           "y": 10.0,
-          "z": -3.0
+          "z": -2.0
         },
         "color": {
           "red": 0.3,
@@ -155,9 +170,9 @@
           "z": -2.0
         },
         "color": {
-          "red": 0.8,
-          "green": 0.3,
-          "blue": 0.3
+          "red": 0.3,
+          "green": 0.7,
+          "blue": 0.4
         },
         "intensity": 1000.0
       }
