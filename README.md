@@ -1,7 +1,7 @@
 # rtracer-rs
 
-[![v](https://img.shields.io/badge/v-0.0.5-blueviolet)]()
-![raytracing example](/pics/example.png)
+[![v](https://img.shields.io/badge/v-0.0.6-blueviolet)]()
+![raytracing example](https://user-images.githubusercontent.com/22867443/182672124-c3fa0155-8215-41e7-8ecd-4c58dd8afa18.png)
 
 Thanks to amazing [criterion author](https://github.com/bheisler) for his raytraycing project!
 
