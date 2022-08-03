@@ -86,12 +86,13 @@ impl Color {
         }
     }
     pub fn to_rgba(self) -> Rgba<u8> {
-        Rgba::from_channels(
+        Rgba::from_slice(&[
             (gamma_encode(self.red) * 255.0) as u8,
             (gamma_encode(self.green) * 255.0) as u8,
             (gamma_encode(self.blue) * 255.0) as u8,
             0,
-        )
+        ])
+        .to_owned()
     }
     pub fn from_rgba(rgba: Rgba<u8>) -> Color {
         Color {
