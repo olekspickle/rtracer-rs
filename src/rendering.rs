@@ -1,6 +1,6 @@
-use crate::entities::{Element, ViewBlock, Color, Plane, Scene,Intersection, Sphere};
-use image::{DynamicImage, GenericImage, Pixel, Rgba};
+use crate::entities::{Color, Element, Intersection, Plane, Scene, Sphere, ViewBlock};
 use crate::{point::Point, vector::Vector3};
+use image::{DynamicImage, GenericImage, Pixel, Rgba};
 
 const BLACK: Color = Color {
     red: 0.0,
@@ -97,10 +97,8 @@ impl Scene {
         if depth >= self.max_recursion_depth {
             return BLACK;
         }
-    
         let intersection = self.trace(&ray);
-        intersection.map(|i| BLACK)
-            .unwrap_or(BLACK)
+        intersection.map(|i| BLACK).unwrap_or(BLACK)
     }
     pub fn render(&self, block: &ViewBlock) -> DynamicImage {
         let mut image = DynamicImage::new_rgb8(block.width, block.height);
@@ -118,7 +116,29 @@ impl Scene {
             .filter_map(|s| s.intersect(ray).map(|d| Intersection::new(d, s)))
             .min_by(|i1, i2| i1.distance.partial_cmp(&i2.distance).unwrap())
     }
-    pub fn spheres(self) -> Scene{
-        
+    pub fn spheres() -> Scene {
+        let s_1 = Element::Sphere(Sphere {
+            center: Point::new(0.0, 0.0, -5.0),
+            radius: 2.0,
+            color: Color::new(0.4, 0.7, 0.4),
+        });
+        let s_2 = Element::Sphere(Sphere {
+            center: Point::new(-5.0, 1.0, -5.0),
+            radius: 1.0,
+            color: Color::new(0.4, 0.4, 0.7),
+        });
+        let s_3 = Element::Sphere(Sphere {
+            center: Point::new(5.0, 0.0, -5.0),
+            radius: 3.0,
+            color: Color::new(0.7, 0.4, 0.4),
+        });
+
+        Scene {
+            width: 800,
+            height: 600,
+            fov: 90.0,
+            elements: vec![s_1, s_2, s_3],
+            max_recursion_depth: 0,
+        }
     }
 }
