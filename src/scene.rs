@@ -85,18 +85,69 @@ impl Scene {
     }
 
     fn get_color(&self, ray: &Ray, intersection: &Intersection, depth: u32) -> Color {
-        let hit_point = ray.origin + (ray.direction * intersection.distance);
-        let surface_normal = intersection.element.surface_normal(&hit_point);
+        let hit = ray.origin + (ray.direction * intersection.distance);
+        let normal = intersection.element.surface_normal(&hit);
 
-        let mut color = self.shade_diffuse(intersection.element, hit_point, surface_normal);
+        let material = intersection.element.material();
+        match material.surface {
+            SurfaceType::Diffuse => self.shade_diffuse(intersection.element, hit, normal),
+            SurfaceType::Reflective { reflectivity } => {
+                let mut color = self.shade_diffuse(intersection.element, hit, normal);
+                let reflection_ray =
+                    Ray::create_reflection(normal, ray.direction, hit, self.shadow_bias);
+                color = color * (1.0 - reflectivity);
+                color = color + (self.cast_ray(&reflection_ray, depth + 1) * reflectivity);
+                color
+            }
+            SurfaceType::Refractive {
+                index,
+                transparency,
+            } => {
+                let mut refraction_color = BLACK;
+                let kr = self.fresnel(ray.direction, normal, index) as f32;
+                let surface_color = material
+                    .coloration
+                    .color(&intersection.element.texture_coords(&hit));
 
-        if let SurfaceType::Reflective { reflectivity } = intersection.element.material().surface {
-            let reflection_ray =
-                Ray::create_reflection(surface_normal, ray.direction, hit_point, self.shadow_bias);
+                if kr < 1.0 {
+                    let transmission_ray = Ray::create_transmission(
+                        normal,
+                        ray.direction,
+                        hit,
+                        self.shadow_bias,
+                        index,
+                    )
+                    .unwrap();
+                    refraction_color = self.cast_ray(&transmission_ray, depth + 1);
+                }
 
-            color = color * (1.0 - reflectivity);
-            color = color + (self.cast_ray(&reflection_ray, depth + 1) * reflectivity);
+                let reflection_ray =
+                    Ray::create_reflection(normal, ray.direction, hit, self.shadow_bias);
+                let reflection_color = self.cast_ray(&reflection_ray, depth + 1);
+                let mut color = reflection_color * kr + refraction_color * (1.0 - kr);
+                color = color * transparency * surface_color;
+                color
+            }
         }
-        color
+    }
+    fn fresnel(&self, incident: Vector3, normal: Vector3, index: f32) -> f64 {
+        let i_dot_n = incident.dot(&normal);
+        let mut eta_i = 1.0;
+        let mut eta_t = index as f64;
+        if i_dot_n > 0.0 {
+            eta_i = eta_t;
+            eta_t = 1.0;
+        }
+        let sin_t = eta_i / eta_t * (1.0 - i_dot_n * i_dot_n).max(0.0).sqrt();
+        if sin_t > 1.0 {
+            //Total internal reflection
+            return 1.0;
+        } else {
+            let cos_t = (1.0 - sin_t * sin_t).max(0.0).sqrt();
+            let cos_i = cos_t.abs();
+            let r_s = ((eta_t * cos_i) - (eta_i * cos_t)) / ((eta_t * cos_i) + (eta_i * cos_t));
+            let r_p = ((eta_i * cos_i) - (eta_t * cos_t)) / ((eta_i * cos_i) + (eta_t * cos_t));
+            return (r_s * r_s + r_p * r_p) / 2.0;
+        }
     }
 }
