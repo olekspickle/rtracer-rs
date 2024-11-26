@@ -307,6 +307,7 @@ name = "rtracer-rs"
 version = "0.1.0"
 dependencies = [
  "image 0.22.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "num-traits 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
  "vek 0.9.9 (registry+https://github.com/rust-lang/crates.io-index)",
