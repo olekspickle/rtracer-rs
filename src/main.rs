@@ -14,10 +14,6 @@ fn main() {
     let _result = save_image(img, &Path::new("output/test.png"));
 }
 
-pub fn render(scene: &Scene) -> DynamicImage {
-    DynamicImage::new_rgb8(scene.width, scene.height)
-}
-
 pub fn save_image(img: DynamicImage, p: &Path) {
     match img.save(p) {
         Ok(ok) => println!("saved successfully {:?}", ok),
