@@ -2,6 +2,7 @@
 use image::{ImageBuffer, Rgb};
 use num_complex;
 use std::path::Path;
+use crate::utils::{print_green, print_italic};
 
 pub struct Fractal {
     pub x: u32,
@@ -9,7 +10,7 @@ pub struct Fractal {
 }
 
 impl Fractal {
-    fn new(self, x: u32, y: u32) -> Fractal {
+    pub fn new(self, x: u32, y: u32) -> Fractal {
         Fractal { x, y }
     }
     pub fn save(self, p: &Path) {
@@ -47,9 +48,9 @@ impl Fractal {
             }
         }
 
-        println!("saving fractal to {:?} ", p);
+        print_italic(&format!("saving as {:?} ", p));
         imgbuf.save(p).unwrap();
-        println!("saved fractal");
+        print_green("success!");
     }
 }
 
