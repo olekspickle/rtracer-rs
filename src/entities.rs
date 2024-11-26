@@ -96,11 +96,59 @@ pub struct Sphere {
     pub albedo: f32,
 }
 
+
 #[derive(Deserialize, Serialize, Debug)]
-pub struct Light {
+pub struct DirectionalLight {
+    #[serde(deserialize_with="Vector3::deserialize_normalized")]
     pub direction: Vector3,
     pub color: Color,
     pub intensity: f32,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct SphericalLight {
+    pub position: Point,
+    pub color: Color,
+    pub intensity: f32,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub enum Light {
+    Directional(DirectionalLight),
+    Spherical(SphericalLight),
+}
+
+impl Light {
+    pub fn color(&self) -> Color {
+        match *self {
+            Light::Directional(ref d) => d.color,
+            Light::Spherical(ref s) => s.color,
+        }
+    }
+
+    pub fn direction_from(&self, hit_point: &Point) -> Vector3 {
+        match *self {
+            Light::Directional(ref d) => -d.direction,
+            Light::Spherical(ref s) => (s.position - *hit_point).normalize(),
+        }
+    }
+
+    pub fn intensity(&self, hit_point: &Point) -> f32 {
+        match *self {
+            Light::Directional(ref d) => d.intensity,
+            Light::Spherical(ref s) => {
+                let r2 = (s.position - *hit_point).norm() as f32;
+                s.intensity / (4.0 * ::std::f32::consts::PI * r2)
+            }
+        }
+    }
+
+    pub fn distance(&self, hit_point: &Point) -> f64 {
+        match *self {
+            Light::Directional(_) => ::std::f64::INFINITY,
+            Light::Spherical(ref s) => (s.position - *hit_point).length(),
+        }
+    }
 }
 
 pub struct Intersection<'a> {
@@ -194,18 +242,20 @@ impl Scene {
             green: 0.0,
         };
         for light in &self.lights {
-            let direction_to_light = -light.direction;
+            let direction_to_light = light.direction_from(&hit_point);
         
             let shadow_ray = Ray {
                 origin: hit_point + (direction_to_light * self.shadow_bias),
                 direction: direction_to_light,
             };
-            let in_light = self.trace(&shadow_ray).is_none();
-            let light_intensity = if in_light { light.intensity } else { 0.0 };
+            let shadow_intersection = self.trace(&shadow_ray);
+            let in_light = shadow_intersection.is_none() ||
+            shadow_intersection.unwrap().distance > light.distance(&hit_point);
+            let light_intensity = if in_light { light.intensity(&hit_point) } else { 0.0 };
             let light_power = (surface_normal.dot(&direction_to_light) as f32).max(0.0) *
                               light_intensity;
             let light_reflected = intersection.element.albedo() / std::f32::consts::PI;
-            let light_color = light.color * light_power * light_reflected;
+            let light_color = light.color() * light_power * light_reflected;
             color = color + (*intersection.element.color() * light_color);
         }
         color.clamp()
