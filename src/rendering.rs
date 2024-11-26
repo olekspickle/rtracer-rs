@@ -1,6 +1,5 @@
 use crate::entities::{Point, Scene};
 use vek::{Vec3};
-use num_traits::identities::Zero;
 
 pub struct Ray {
     pub origin: Point,
