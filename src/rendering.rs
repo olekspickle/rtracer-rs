@@ -102,27 +102,30 @@ impl Scene {
         let intersection = self.trace(&ray);
         intersection.map(|i| BLACK).unwrap_or(BLACK)
     }
+
     pub fn render(scene: &Scene) -> DynamicImage {
         let mut image = DynamicImage::new_rgb8(scene.width, scene.height);
-        let black = Rgba::from_channels(0, 0, 0, 0);
+        let black = Rgba::from_channels(0u8, 0u8, 0u8, 0u8);
         for x in 0..scene.width {
             for y in 0..scene.height {
                 let ray = Ray::create_prime(x, y, scene);
     
                 let intersection = scene.trace(&ray);
-                let color = intersection.map(|i| to_rgba(&i.object.color))
-                    .unwrap_or(black);
-                image.put_pixel(x, y, color);
+                let color = intersection.map(|i| &i.object.color.to_rgba())
+                    .unwrap_or(&black);
+                image.put_pixel(x, y, *color);
             }
         }
         image
     }
+
     pub fn trace(&self, ray: &Ray) -> Option<Intersection> {
         self.elements
             .iter()
             .filter_map(|s| s.intersect(ray).map(|d| Intersection::new(d, s)))
             .min_by(|i1, i2| i1.distance.partial_cmp(&i2.distance).unwrap())
     }
+
     pub fn spheres() -> Scene {
         let s_1 = Element::Sphere(Sphere {
             center: Point::new(0.0, 0.0, -5.0),
