@@ -1,15 +1,9 @@
+use num_traits::identities::Zero;
 use serde_derive::Deserialize;
+use std::ops::Add;
 use vek::Vec3;
 
-// #[derive(Debug, Deserialize)]
-// pub struct Ray {
-//     A: Vec3<f32, f32, f32>,
-//     B: Vec3<f32, f32, f32>,
-//     time: f32,
-// }
-
-
-
+#[derive(Debug, Deserialize, PartialEq)]
 pub struct Point {
     pub x: f32,
     pub y: f32,
@@ -33,4 +27,34 @@ pub struct Scene {
     pub height: u32,
     pub fov: f64,
     pub sphere: Sphere,
+}
+
+impl Add<Point> for Point {
+    type Output = Point;
+    fn add(self, p: Point) -> Point {
+        Point {
+            x: self.x + p.x,
+            y: self.y + p.y,
+            z: self.z + p.z,
+        }
+    }
+}
+
+impl Zero for Point {
+    fn zero() -> Point {
+        Point {
+            x: 0.0f32,
+            y: 0.0f32,
+            z: 0.0f32,
+        }
+    }
+    fn is_zero(&self) -> bool {
+        let Point { x, y, z } = self;
+
+        if *x == 0f32 || *y == 0f32 || *z == 0f32 {
+            true
+        } else {
+            false
+        }
+    }
 }
