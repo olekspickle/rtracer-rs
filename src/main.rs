@@ -19,7 +19,8 @@
 //!
 //! ### useful resourses
 //! [Scrathpixel](https://www.scratchapixel.com/index.php?redirect) is fantastic library!
-//! They have great materials and specific images and docs! You should definately check them out.
+//! They have great materials and specific images and docs! You should definitely check them out.
+//! #### (although they seem to have some certificate issues as of today 02/06/2020...)
 //!
 use image::DynamicImage;
 use std::{fs::File, path::Path, time::Instant};
