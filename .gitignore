@@ -2,3 +2,5 @@
 **/*.rs.bk
 
 /output
+*.swp
+.vscode
