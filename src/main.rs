@@ -1,6 +1,6 @@
 use std::{path::Path};
 
-use image::{DynamicImage, ImageDecoder};
+use image::{DynamicImage, GenericImageView};
 
 mod my_macro;
 mod entities;
@@ -38,6 +38,10 @@ mod test {
         let scene = Scene::default();
 
         let img: DynamicImage = render(&scene);
+        
+        assert_eq!(scene.width, img.width());
+        assert_eq!(scene.height, img.height());
+        
         let result = match img.save(&Path::new("output/test.png")) {
             Ok(ok) => {
                 println!("saved successfully {:?}", ok);
@@ -50,9 +54,5 @@ mod test {
         };
         assert_eq!(result, true);
 
-        // TODO: width & height functions are public in ImageBuffer struct
-        // I have no idea why it is broken
-        // assert_eq!(scene.width, img.width());
-        // assert_eq!(scene.height, img.height());
     }
 }
