@@ -92,19 +92,34 @@
       }
     }
   ],
-  "light": {
-    "direction": {
-      "x": -0.25,
-      "y": -1.0,
-      "z": -1.0
+  "lights": [
+    {
+      "direction": {
+        "x": -0.25,
+        "y": -1.0,
+        "z": -1.0
+      },
+      "color": {
+        "red": 0.3,
+        "green": 0.8,
+        "blue": 0.3
+      },
+      "intensity": 10.0
     },
-    "color": {
-      "red": 1.0,
-      "green": 1.0,
-      "blue": 1.0
-    },
-    "intensity": 20.0
-  },
+    {
+      "direction": {
+        "x": 0.25,
+        "y": -0.5,
+        "z": -0.5
+      },
+      "color": {
+        "red": 0.8,
+        "green": 0.3,
+        "blue": 0.3
+      },
+      "intensity": 15.0
+    }
+  ],
   "max_recursion_depth": 1,
-  "shadow_bias": 0.00000000000001
+  "shadow_bias": 1e-13
 }

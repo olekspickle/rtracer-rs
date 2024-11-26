@@ -5,7 +5,7 @@ use crate::{
 };
 use image::{DynamicImage, GenericImage, Pixel, Rgba};
 use serde_derive::{Deserialize, Serialize};
-use std::ops::Mul;
+use std::ops::{Mul, Add};
 
 #[repr(C)]
 #[derive(Debug)]
@@ -23,6 +23,17 @@ pub struct Color {
     pub blue: f32,
 }
 
+impl Add for Color {
+    type Output = Color;
+
+    fn add(self, other: Color) -> Color {
+        Color {
+            red: self.red + other.red,
+            blue: self.blue + other.blue,
+            green: self.green + other.green,
+        }
+    }
+}
 impl Mul for Color {
     type Output = Color;
 
@@ -137,7 +148,7 @@ pub struct Scene {
     pub height: u32,
     pub fov: f64,
     pub elements: Vec<Element>,
-    pub light: Light,
+    pub lights: Vec<Light>,
     pub max_recursion_depth: u32,
     pub shadow_bias: f64,
 }
@@ -177,20 +188,26 @@ impl Scene {
     pub fn get_color(&self, ray: &Ray, intersection: &Intersection) -> Color {
         let hit_point = ray.origin + (ray.direction * intersection.distance);
         let surface_normal = intersection.element.surface_normal(&hit_point);
-        let direction_to_light = -self.light.direction.normalize();
-        let shadow_ray = Ray {
-            origin: hit_point + (surface_normal * self.shadow_bias),
-            direction: direction_to_light,
+        let mut color = Color {
+            red: 0.0,
+            blue: 0.0,
+            green: 0.0,
         };
-        let in_light = self.trace(&shadow_ray).is_none();
-        let light_intensity = if in_light { self.light.intensity } else { 0.0 };
-        let light_power = (surface_normal.dot(&direction_to_light) as f32).max(0.0) * light_intensity;
-        let light_reflected = intersection.element.albedo() / std::f32::consts::PI;
-
-        let color = intersection.element.color().clone()
-            * self.light.color.clone()
-            * light_power
-            * light_reflected;
-        color.clamp()
+        for light in &self.lights {
+            let direction_to_light = -light.direction;
+        
+            let shadow_ray = Ray {
+                origin: hit_point + (direction_to_light * self.shadow_bias),
+                direction: direction_to_light,
+            };
+            let in_light = self.trace(&shadow_ray).is_none();
+            let light_intensity = if in_light { light.intensity } else { 0.0 };
+            let light_power = (surface_normal.dot(&direction_to_light) as f32).max(0.0) *
+                              light_intensity;
+            let light_reflected = intersection.element.albedo() / std::f32::consts::PI;
+            let light_color = light.color * light_power * light_reflected;
+            color = color + (*intersection.element.color() * light_color);
+        }
+        color
     }
 }
