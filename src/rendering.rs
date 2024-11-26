@@ -1,4 +1,4 @@
-use crate::ray_store::{Point, Scene};
+use crate::entities::{Point, Scene};
 use vek::{Vec3};
 use num_traits::identities::Zero;
 
