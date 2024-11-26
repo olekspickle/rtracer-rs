@@ -15,7 +15,7 @@ use utils::{print_green, print_italic};
 // use point::Point;
 
 fn main() {
-    let scene = Scene::default();
+    let scene = Scene::spheres();
     let img: DynamicImage = scene.render();
     let f = Fractal::default();
 
