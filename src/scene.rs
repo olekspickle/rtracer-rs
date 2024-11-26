@@ -33,14 +33,14 @@ impl Scene {
 
     pub fn render(&self) -> DynamicImage {
         let mut image = DynamicImage::new_rgb8(self.width, self.height);
-        let black = Rgba::from_channels(0u8, 0u8, 0u8, 0u8);
+        let black = Rgba::from_slice(&[0u8, 0u8, 0u8, 0u8]);
         for x in 0..self.width {
             for y in 0..self.height {
                 let ray = Ray::create_prime(x, y, self);
                 let intersection = self.trace(&ray);
                 let color = intersection
                     .map(|i| self.get_color(&ray, &i, DEPTH).to_rgba())
-                    .unwrap_or(black);
+                    .unwrap_or(black.to_owned());
                 image.put_pixel(x, y, color);
             }
         }

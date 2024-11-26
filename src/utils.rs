@@ -27,17 +27,17 @@ pub fn print_italic(s: &str) {
     println!("{}{}{}", style::Italic, s, style::Reset);
 }
 
-pub fn save_image(img: DynamicImage, p: &Path) {
-    print_italic(&format!("saving as {:?}...", p));
+pub fn save_image(img: DynamicImage, path: &Path) {
+    print_italic(&format!("saving as {:?}...", path));
 
     let mut _image_file: File = OpenOptions::new()
         .write(true)
         .truncate(true)
         .create(true)
-        .open(p)
+        .open(path)
         .unwrap();
 
-    match img.save_with_format(p, ImageFormat::PNG) {
+    match img.save_with_format(path, ImageFormat::Png) {
         Ok(_) => print_green("success!"),
         Err(err) => println!("failed to save {:?}", err),
     }
