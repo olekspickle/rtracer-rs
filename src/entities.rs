@@ -1,8 +1,8 @@
-use num_traits::identities::Zero;
 use serde_derive::{Deserialize, Serialize};
+use num_traits::identities::Zero;
 use std::ops::{Add, Sub};
+use image::DynamicImage;
 use vek::Vec3;
-
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 #[repr(C)]
@@ -141,5 +141,11 @@ impl Default for Scene {
                 },
             },
         }
+    }
+}
+
+impl Scene {
+    pub fn render(&self) -> DynamicImage {
+        DynamicImage::new_rgb8(self.width, self.height)
     }
 }
