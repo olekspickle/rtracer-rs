@@ -89,11 +89,16 @@ impl Color {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+pub struct Material {
+    pub color: Color,
+    pub albedo: f32,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Sphere {
     pub center: Point,
     pub radius: f64,
-    pub color: Color,
-    pub albedo: f32,
+    pub material: Material,
 }
 
 
@@ -165,8 +170,7 @@ impl<'a> Intersection<'a> {
 pub struct Plane {
     pub origin: Point,
     pub normal: Vector3,
-    pub color: Color,
-    pub albedo: f32,
+    pub material: Material,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -178,14 +182,14 @@ pub enum Element {
 impl Element {
     pub fn color(&self) -> &Color {
         match *self {
-            Element::Sphere(ref s) => &s.color,
-            Element::Plane(ref p) => &p.color,
+            Element::Sphere(ref s) => &s.material.color,
+            Element::Plane(ref p) => &p.material.color,
         }
     }
     pub fn albedo(&self) -> f32 {
         match *self {
-            Element::Sphere(ref s) => s.albedo,
-            Element::Plane(ref p) => p.albedo,
+            Element::Sphere(ref s) => s.material.albedo,
+            Element::Plane(ref p) => p.material.albedo,
         }
     }
 }
