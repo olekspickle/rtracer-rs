@@ -1,5 +1,5 @@
+use image::{DynamicImage, GenericImageView};
 use std::path::Path;
-use image::{DynamicImage, GenericImageView, Rgba};
 
 mod entities;
 mod fractal;
@@ -7,8 +7,7 @@ mod my_macro;
 mod rendering;
 
 use entities::{Color, Point, Scene, Sphere};
-use fractal::{Fractal};
-use rendering::{Intersectable, Ray};
+use fractal::Fractal;
 
 fn main() {
     let scene = Scene::default();
@@ -18,23 +17,6 @@ fn main() {
     save_image(img, &Path::new("output/test_scene.png"));
     f.save(&Path::new("output/fractal.png"));
 }
-
-// pub fn render(scene: &Scene) -> DynamicImage {
-//     let mut image = DynamicImage::new_rgb8(scene.width, scene.height);
-//     let black = Rgba::from_channels(0, 0, 0, 0);
-//     for x in 0..scene.width {
-//         for y in 0..scene.height {
-//             let ray = Ray::create_prime(x, y, scene);
-
-//             if scene.sphere.intersect(&ray) {
-//                 image.put_pixel(x, y, to_rgba(&scene.sphere.color))
-//             } else {
-//                 image.put_pixel(x, y, black);
-//             }
-//         }
-//     }
-//     image
-// }
 
 pub fn save_image(img: DynamicImage, p: &Path) {
     println!("saving image to {:?} ", p);
