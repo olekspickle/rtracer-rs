@@ -35,7 +35,8 @@ impl Ray {
                 x: sensor_x,
                 y: sensor_y,
                 z: -1.0,
-            },
+            }
+            .normalize(),
         }
     }
 }
@@ -92,5 +93,3 @@ impl Intersectable for Sphere {
         Some(distance)
     }
 }
-
-
