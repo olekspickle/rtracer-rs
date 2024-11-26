@@ -1,4 +1,5 @@
 use crate::{point::Point, vector::Vector3};
+use image::{Pixel, Rgba};
 use serde_derive::{Deserialize, Serialize};
 
 #[repr(C)]
@@ -32,7 +33,6 @@ pub struct Scene {
     pub elements: Vec<Element>,
     pub max_recursion_depth: u32,
 }
-
 
 pub struct Intersection<'a> {
     pub distance: f64,
@@ -73,5 +73,8 @@ impl Color {
             green: green,
             blue: blue,
         }
+    }
+    pub fn to_rgba(self) -> Rgba<f32> {
+        Rgba::from_channels(self.red, self.green, self.blue, 0.0)
     }
 }
