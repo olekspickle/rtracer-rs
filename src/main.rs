@@ -1,5 +1,5 @@
 use image::DynamicImage;
-use std::path::Path;
+use std::{path::Path, fs::File};
 
 mod entities;
 mod fractal;
@@ -16,7 +16,10 @@ pub use utils::*;
 pub use vector::*;
 
 pub fn main() {
-    let scene = Scene::spheres();
+    let scene_path = Path::new("scenes/test.json");
+    let scene_file = File::open(scene_path).expect("File not found");
+    let scene: Scene = serde_json::from_reader(scene_file).unwrap();
+
     let img: DynamicImage = scene.render();
     let f = Fractal::default();
 
