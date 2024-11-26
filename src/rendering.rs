@@ -1,5 +1,9 @@
-use crate::entities::{Color, Element, Plane, Scene, Sphere};
-use crate::{point::Point, vector::Vector3};
+use crate::{
+    entities::{Color, Element, Plane, Sphere},
+    point::Point,
+    scene::Scene,
+    vector::Vector3,
+};
 use std::f32::consts::PI;
 
 pub const BLACK: Color = Color {
@@ -40,6 +44,42 @@ impl Ray {
             .normalize(),
         }
     }
+
+    /// The more interesting question here is how to compute the reflection ray.
+    /// If you’ve taken physics, you may remember the mantra that
+    /// the angle of incidence equals the angle of reflection.
+    /// That’s helpful enough as far as it goes, but how do we actually calculate that in terms of vectors?
+    /// Reflection Ray
+    /// We can separate the incident vector I into two vectors, A and B (see figure) such that I = A + B.
+    /// The reflection vector R is then equal to A - B.
+    /// I = A + B
+    /// R = A - B
+    ///
+    /// We can compute B quite easily - it’s the projection of I onto the surface normal,
+    /// or the dot product of I and N multiplied by N.
+    /// B = (I.N)N
+    ///
+    /// Substitute that into both equations:
+    /// I = A + (I.N)N
+    /// R = A - (I.N)N
+    ///
+    /// Then solve the first equation for A:
+    /// A = I - (I.N)N
+    ///
+    /// And substitute into the second equation:
+    /// R = I - (I.N)N - (I.N)N
+    /// R = I - 2(I.N)N
+    pub fn create_reflection(
+        normal: Vector3,
+        incident: Vector3,
+        intersection: Point,
+        bias: f64,
+    ) -> Ray {
+        Ray {
+            origin: intersection + (normal * bias),
+            direction: incident - 2.0 * (incident.dot(&normal) * normal),
+        }
+    }
 }
 
 pub struct TextureCoords {
@@ -73,7 +113,6 @@ impl Intersectable for Element {
             Element::Plane(ref p) => p.texture_coords(hit_point),
         }
     }
-    
 }
 
 impl Intersectable for Plane {
@@ -92,7 +131,7 @@ impl Intersectable for Plane {
     fn surface_normal(&self, _: &Point) -> Vector3 {
         -self.normal.normalize()
     }
-    fn texture_coords(&self, hit_point: &Point) -> TextureCoords{
+    fn texture_coords(&self, hit_point: &Point) -> TextureCoords {
         let mut x_axis = self.normal.cross(&Vector3 {
             x: 0.0,
             y: 0.0,

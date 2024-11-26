@@ -26,6 +26,7 @@ mod point;
 mod rendering;
 mod utils;
 mod vector;
+mod scene;
 
 pub use entities::*;
 pub use fractal::*;
@@ -33,6 +34,7 @@ pub use point::*;
 pub use rendering::*;
 pub use utils::*;
 pub use vector::*;
+use scene::{Scene};
 
 pub fn main() {
     let scene_path = Path::new("scenes/test.json");

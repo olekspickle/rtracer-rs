@@ -1,9 +1,5 @@
-use crate::{
-    point::Point,
-    rendering::{Intersectable, Ray, TextureCoords, BLACK},
-    vector::Vector3,
-};
-use image::{DynamicImage, GenericImage, GenericImageView, Pixel, Rgba};
+use crate::{point::Point, rendering::TextureCoords, vector::Vector3};
+use image::{DynamicImage, GenericImageView, Pixel, Rgba};
 use serde::{Deserialize, Deserializer};
 use serde_derive::Deserialize;
 
@@ -12,6 +8,8 @@ use std::{
     ops::{Add, Mul},
     path::PathBuf,
 };
+
+pub const DEPTH: u32 = 0;
 
 #[repr(C)]
 #[derive(Debug)]
@@ -149,9 +147,16 @@ impl Coloration {
 }
 
 #[derive(Deserialize, Debug)]
+pub enum SurfaceType {
+    Diffuse,
+    Reflective { reflectivity: f32 },
+}
+
+#[derive(Deserialize, Debug)]
 pub struct Material {
     pub coloration: Coloration,
     pub albedo: f32,
+    pub surface: SurfaceType,
 }
 
 #[derive(Deserialize, Debug)]
@@ -251,84 +256,5 @@ impl Element {
             Element::Sphere(ref mut s) => &mut s.material,
             Element::Plane(ref mut p) => &mut p.material,
         }
-    }
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Scene {
-    pub width: u32,
-    pub height: u32,
-    pub fov: f64,
-    pub elements: Vec<Element>,
-    pub lights: Vec<Light>,
-    pub max_recursion_depth: u32,
-    pub shadow_bias: f64,
-}
-
-impl Scene {
-    pub fn cast_ray(&self, ray: &Ray, depth: u32) -> Color {
-        if depth >= self.max_recursion_depth {
-            return BLACK;
-        }
-        let intersection = self.trace(&ray);
-        intersection.map(|_i| BLACK).unwrap_or(BLACK)
-    }
-
-    pub fn render(&self) -> DynamicImage {
-        let mut image = DynamicImage::new_rgb8(self.width, self.height);
-        let black = Rgba::from_channels(0u8, 0u8, 0u8, 0u8);
-        for x in 0..self.width {
-            for y in 0..self.height {
-                let ray = Ray::create_prime(x, y, self);
-                let intersection = self.trace(&ray);
-                let color = intersection
-                    .map(|i| self.get_color(&ray, &i).to_rgba())
-                    .unwrap_or(black);
-                image.put_pixel(x, y, color);
-            }
-        }
-        image
-    }
-
-    pub fn trace(&self, ray: &Ray) -> Option<Intersection> {
-        self.elements
-            .iter()
-            .filter_map(|e| e.intersect(ray).map(|d| Intersection::new(d, e)))
-            .min_by(|i1, i2| i1.distance.partial_cmp(&i2.distance).unwrap())
-    }
-
-    pub fn get_color(&self, ray: &Ray, intersection: &Intersection) -> Color {
-        let hit_point = ray.origin + (ray.direction * intersection.distance);
-        let surface_normal = intersection.element.surface_normal(&hit_point);
-        let texture_coords = intersection.element.texture_coords(&hit_point);
-
-        let mut color = Color {
-            red: 0.0,
-            blue: 0.0,
-            green: 0.0,
-        };
-        for light in &self.lights {
-            let direction_to_light = light.direction_from(&hit_point);
-
-            let shadow_ray = Ray {
-                origin: hit_point + (direction_to_light * self.shadow_bias),
-                direction: direction_to_light,
-            };
-            let shadow_intersection = self.trace(&shadow_ray);
-            let in_light = shadow_intersection.is_none()
-                || shadow_intersection.unwrap().distance > light.distance(&hit_point);
-            let light_intensity = if in_light {
-                light.intensity(&hit_point)
-            } else {
-                0.0
-            };
-            let material = intersection.element.material();
-            let light_power =
-                (surface_normal.dot(&direction_to_light) as f32).max(0.0) * light_intensity;
-            let light_reflected = material.albedo / std::f32::consts::PI;
-            let light_color = light.color() * light_power * light_reflected;
-            color = color + (material.coloration.color(&texture_coords) * light_color);
-        }
-        color.clamp()
     }
 }
