@@ -1,6 +1,6 @@
 {
-  "width": 4000,
-  "height": 3000,
+  "width": 900,
+  "height": 600,
   "fov": 90.0,
   "elements": [
     {
@@ -169,7 +169,7 @@
           "green": 1.0,
           "blue": 1.0
         },
-        "intensity": 5.0
+        "intensity": 3.0
       }
     }
   ],

@@ -114,8 +114,8 @@ pub enum Coloration {
 }
 impl fmt::Debug for Coloration {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Coloration::Color(ref c) => write!(f, "Color({:?})", c),
+        match self {
+            Coloration::Color(c) => write!(f, "Color({:?})", c),
             Coloration::Texture(_) => write!(f, "Texture"),
         }
     }
@@ -134,9 +134,9 @@ fn wrap(val: f32, bound: u32) -> u32 {
 
 impl Coloration {
     pub fn color(&self, coords: &TextureCoords) -> Color {
-        match *self {
-            Coloration::Color(ref c) => c.clone(),
-            Coloration::Texture(ref texture) => {
+        match self {
+            Coloration::Color(c) => c.clone(),
+            Coloration::Texture(texture) => {
                 let tex_x = wrap(coords.x, texture.width());
                 let tex_y = wrap(coords.y, texture.height());
 
@@ -190,23 +190,23 @@ pub enum Light {
 
 impl Light {
     pub fn color(&self) -> Color {
-        match *self {
-            Light::Directional(ref d) => d.color,
-            Light::Spherical(ref s) => s.color,
+        match self {
+            Light::Directional(d) => d.color,
+            Light::Spherical(s) => s.color,
         }
     }
 
     pub fn direction_from(&self, hit_point: &Point) -> Vector3 {
-        match *self {
-            Light::Directional(ref d) => -d.direction,
-            Light::Spherical(ref s) => (s.position - *hit_point).normalize(),
+        match self {
+            Light::Directional(d) => -d.direction,
+            Light::Spherical(s) => (s.position - *hit_point).normalize(),
         }
     }
 
     pub fn intensity(&self, hit_point: &Point) -> f32 {
-        match *self {
-            Light::Directional(ref d) => d.intensity,
-            Light::Spherical(ref s) => {
+        match self {
+            Light::Directional(d) => d.intensity,
+            Light::Spherical(s) => {
                 let r2 = (s.position - *hit_point).norm() as f32;
                 s.intensity / (4.0 * ::std::f32::consts::PI * r2)
             }
@@ -214,9 +214,9 @@ impl Light {
     }
 
     pub fn distance(&self, hit_point: &Point) -> f64 {
-        match *self {
+        match self {
             Light::Directional(_) => ::std::f64::INFINITY,
-            Light::Spherical(ref s) => (s.position - *hit_point).length(),
+            Light::Spherical(s) => (s.position - *hit_point).length(),
         }
     }
 }
@@ -246,9 +246,9 @@ pub enum Element {
 
 impl Element {
     pub fn material(&self) -> &Material {
-        match *self {
-            Element::Sphere(ref s) => &s.material,
-            Element::Plane(ref p) => &p.material,
+        match self {
+            Element::Sphere(s) => &s.material,
+            Element::Plane(p) => &p.material,
         }
     }
 

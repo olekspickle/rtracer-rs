@@ -22,6 +22,7 @@
 //! They have great materials and specific images and docs! You should definitely check them out.
 //! #### (although they seem to have some certificate issues as of today 02/06/2020...)
 //!
+
 use image::DynamicImage;
 use std::{fs::File, path::Path, time::Instant};
 
@@ -42,19 +43,21 @@ pub use utils::*;
 pub use vector::*;
 
 pub fn main() {
-    let scene_path = Path::new("scenes/test.json");
+    let scene_path = Path::new("scenes/main.json");
     let scene_file = File::open(scene_path).expect("File not found");
     let scene: Scene = serde_json::from_reader(scene_file).unwrap();
 
+    // Render main scene with 3 spheres and 2 planes image
     let start = Instant::now();
     println!("Start ray tracing image render...");
     let img: DynamicImage = scene.render();
     save_image(img, &Path::new("output/test_scene.png"));
     println!("Elapsed: {:?}", start.elapsed());
 
-    let start = Instant::now();
-    println!("Start fractal image render...");
-    let f = Fractal::default();
-    f.save(&Path::new("output/fractal.png"));
-    println!("Elapsed: {:?}", start.elapsed());
+    // // Render fractal image
+    // let start = Instant::now();
+    // println!("Start fractal image render...");
+    // let f = Fractal::default();
+    // f.save(&Path::new("output/fractal.png"));
+    // println!("Elapsed: {:?}", start.elapsed());
 }
