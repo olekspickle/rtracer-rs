@@ -16,7 +16,7 @@ use utils::{print_green, print_italic};
 
 fn main() {
     let scene = Scene::default();
-    let img: DynamicImage = scene.render_simple_sphere();
+    let img: DynamicImage = scene.render();
     let f = Fractal::default();
 
     save_image(img, &Path::new("output/test_scene.png"));
