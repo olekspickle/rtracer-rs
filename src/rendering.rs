@@ -1,4 +1,4 @@
-use crate::entities::{Point, Scene, Sphere};
+use crate::entities::{Point, Element, Plane, Scene,Intersection, Sphere};
 use image::{DynamicImage, GenericImage, Pixel, Rgba};
 use vek::Vec3;
 
@@ -36,25 +36,56 @@ impl Ray {
 }
 
 pub trait Intersectable {
-    fn intersect(&self, ray: &Ray) -> bool;
+    fn intersect(&self, ray: &Ray) -> Option<f64>;
 }
 
+impl Intersectable for Element {
+    fn intersect(&self, ray: &Ray) -> Option<f64> {
+        match *self {
+            Element::Sphere(ref s) => s.intersect(ray),
+            Element::Plane(ref p) => p.intersect(ray),
+        }
+    }
+}
+impl Intersectable for Plane {
+    fn intersect(&self, ray: &Ray) -> Option<f64> {
+        let normal = self.normal;
+        let denom = normal.dot(ray.direction);
+        if denom > 1e-6 {
+            let v = self.p0 - ray.origin;
+            let distance = v.dot(normal) / denom;
+            if distance >= 0.0 {
+                return Some(distance);
+            }
+        }
+        None
+    }
+}
 impl Intersectable for Sphere {
-    fn intersect(&self, ray: &Ray) -> bool {
+    fn intersect(&self, ray: &Ray) -> Option<f64> {
         //Create a line segment between the ray origin and the center of the sphere
         let l: Vec3<f64> = self.center - ray.origin;
-
         //Use l as a hypotenuse and find the length of the adjacent side
-        let adj2 = l.dot(ray.direction);
+        let adj = l.dot(ray.direction);
         //Find the length-squared of the opposite side
         // dot(self, v: Vec3) -> (self * v).sum()
         // sum(self) -> self.into_iter().sum()
         // vek macros magic explained ^
-        let d2 = l.dot(l) - (adj2 * adj2);
+        let d2 = l.dot(l) - (adj * adj);
+        let radius2 = self.radius * self.radius;
+        if d2 > radius2 {
+            return None;
+        }
+        let thc = (radius2 - d2).sqrt();
+        let t0 = adj - thc;
+        let t1 = adj + thc;
 
-        //pythagorean theorem
-        //If that length-squared is less than radius squared, the ray intersects the sphere
-        d2 < (self.radius * self.radius)
+        if t0 < 0.0 && t1 < 0.0 {
+            return None;
+        }
+
+        let distance = if t0 < t1 { t0 } else { t1 };
+        Some(distance)
     }
 }
 
@@ -77,11 +108,17 @@ impl Scene {
                 if self.sphere.intersect(&ray) {
                     image.put_pixel(x, y, sphere_color)
                 } else {
-                    println!("made it! x{} y{}", x, y);
                     image.put_pixel(x, y, background);
                 }
             }
         }
         image
+    }
+
+    pub fn trace(&self, ray: &Ray) -> Option<Intersection> {
+        self.spheres
+            .iter()
+            .filter_map(|s| s.intersect(ray).map(|d| Intersection::new(d, s)))
+            .min_by(|i1, i2| i1.distance.partial_cmp(&i2.distance).unwrap())
     }
 }
