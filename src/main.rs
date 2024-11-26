@@ -20,7 +20,7 @@ fn main() {
 }
 
 pub fn save_image(img: DynamicImage, p: &Path) {
-    print_italic(&format!("saving as {:?}", p));
+    print_italic(&format!("saving as {:?}...", p));
 
     match img.save(p) {
         Ok(_) => print_green("success!"),
