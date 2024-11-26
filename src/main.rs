@@ -9,7 +9,7 @@ mod vector;
 mod point;
 
 #[allow(unused)]
-use entities::{Color, Scene, Sphere};
+use entities::{ViewBlock, Color, Scene, Sphere};
 use fractal::Fractal;
 use utils::{print_green, print_italic};
 // use point::Point;
