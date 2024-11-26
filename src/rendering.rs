@@ -76,7 +76,7 @@ impl Intersectable for Plane {
         None
     }
     fn surface_normal(&self, _: &Point) -> Vector3 {
-        -self.normal
+        -self.normal.normalize()
     }
 }
 
