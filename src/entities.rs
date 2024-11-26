@@ -139,6 +139,7 @@ pub struct Scene {
     pub elements: Vec<Element>,
     pub light: Light,
     pub max_recursion_depth: u32,
+    pub shadow_bias: f64,
 }
 
 impl Scene {
@@ -178,7 +179,7 @@ impl Scene {
         let surface_normal = intersection.element.surface_normal(&hit_point);
         let direction_to_light = -self.light.direction.normalize();
         let shadow_ray = Ray {
-            origin: hit_point,
+            origin: hit_point + (surface_normal * self.shadow_bias),
             direction: direction_to_light,
         };
         let in_light = self.trace(&shadow_ray).is_none();
