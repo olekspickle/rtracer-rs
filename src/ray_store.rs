@@ -33,4 +33,4 @@ pub struct Scene {
     pub height: u32,
     pub fov: f64,
     pub sphere: Sphere,
-}   
+}
