@@ -1,93 +1,28 @@
+use crate::{point::Point, vector::Vector3};
 use num_traits::identities::Zero;
 use serde_derive::{Deserialize, Serialize};
-use std::ops::{Add, Sub};
-use vek::Vec3;
+use std::ops::Add;
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
-#[repr(C)]
-pub struct Point {
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
-}
-
-impl Point {
-    pub fn zero() -> Point {
-        Point::from_one(0.0)
-    }
-
-    pub fn from_one(v: f64) -> Point {
-        Point { x: v, y: v, z: v }
-    }
-}
-
-impl Add<Vec3<f64>> for Point {
-    type Output = Point;
-
-    fn add(self, other: Vec3<f64>) -> Point {
-        Point {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.z + other.z,
-        }
-    }
-}
-impl Add<Point> for Vec3<f64> {
-    type Output = Point;
-
-    fn add(self, other: Point) -> Point {
-        other + self
-    }
-}
-
-impl Sub<Vec3<f64>> for Point {
-    type Output = Point;
-
-    fn sub(self, other: Vec3<f64>) -> Point {
-        Point {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z,
-        }
-    }
-}
-impl Sub<Point> for Vec3<f64> {
-    type Output = Point;
-
-    fn sub(self, other: Point) -> Point {
-        other - self
-    }
-}
-
-impl Sub<Point> for Point {
-    type Output = Vec3<f64>;
-
-    fn sub(self, other: Point) -> Vec3<f64> {
-        Vec3 {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z,
-        }
-    }
-}
-
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Color {
     pub red: f32,
     pub green: f32,
     pub blue: f32,
 }
 
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Sphere {
     pub center: Point,
     pub radius: f64,
     pub color: Color,
 }
 
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Scene {
     pub width: u32,
     pub height: u32,
     pub fov: f64,
-    pub sphere: Sphere,
+    pub elements: Vec<Element>,
 }
 
 impl Add<Point> for Point {
@@ -122,23 +57,25 @@ impl Zero for Point {
 
 impl Default for Scene {
     fn default() -> Scene {
+        let sphere1 = Element::Sphere(Sphere {
+            center: Point {
+                x: 0.0,
+                y: 0.0,
+                z: -5.0,
+            },
+            radius: 2.0,
+            color: Color {
+                red: 0.4,
+                green: 0.7,
+                blue: 0.4,
+            },
+        });
+
         Scene {
             width: 800,
             height: 600,
             fov: 90.0,
-            sphere: Sphere {
-                center: Point {
-                    x: 0.0,
-                    y: 0.0,
-                    z: -5.0,
-                },
-                radius: 2.0,
-                color: Color {
-                    red: 0.4,
-                    green: 0.7,
-                    blue: 0.4,
-                },
-            },
+            elements: vec![sphere1],
         }
     }
 }
@@ -153,12 +90,14 @@ impl<'a> Intersection<'a> {
     }
 }
 
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Plane {
     pub p0: Point,
-    pub normal: Vec3<f64>,
+    pub normal: Vector3,
     pub color: Color,
 }
 
+#[derive(Deserialize, Serialize, Debug)]
 pub enum Element {
     Sphere(Sphere),
     Plane(Plane),
