@@ -1,5 +1,9 @@
-use crate::{point::Point, vector::Vector3};
-use image::{Pixel, Rgba};
+use crate::{
+    point::Point,
+    rendering::{Intersectable, Ray, BLACK},
+    vector::Vector3,
+};
+use image::{DynamicImage, GenericImage, Pixel, Rgba};
 use serde_derive::{Deserialize, Serialize};
 
 #[repr(C)]
@@ -11,7 +15,7 @@ pub struct ViewBlock {
     pub height: u32,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Clone, Copy, Debug)]
 pub struct Color {
     pub red: f32,
     pub green: f32,
@@ -36,10 +40,10 @@ pub struct Scene {
 
 pub struct Intersection<'a> {
     pub distance: f64,
-    pub object: &'a Sphere,
+    pub object: &'a Element,
 }
 impl<'a> Intersection<'a> {
-    pub fn new<'b>(distance: f64, object: &'b Sphere) -> Intersection<'b> {
+    pub fn new<'b>(distance: f64, object: &'b Element) -> Intersection<'b> {
         Intersection { distance, object }
     }
 }
@@ -81,5 +85,64 @@ impl Color {
             (self.blue * 255.0) as u8,
             0,
         )
+    }
+}
+
+impl Scene {
+    pub fn cast_ray(&self, ray: &Ray, depth: u32) -> Color {
+        if depth >= self.max_recursion_depth {
+            return BLACK;
+        }
+        let intersection = self.trace(&ray);
+        intersection.map(|i| BLACK).unwrap_or(BLACK)
+    }
+
+    pub fn render(&self) -> DynamicImage {
+        let mut image = DynamicImage::new_rgb8(self.width, self.height);
+        let black = Rgba::from_channels(0u8, 0u8, 0u8, 0u8);
+        for x in 0..self.width {
+            for y in 0..self.height {
+                let ray = Ray::create_prime(x, y, self);
+                let intersection = self.trace(&ray);
+                let color = intersection
+                    .map(|i| i.object.color().to_rgba())
+                    .unwrap_or(black);
+                image.put_pixel(x, y, color);
+            }
+        }
+        image
+    }
+
+    pub fn trace(&self, ray: &Ray) -> Option<Intersection> {
+        self.elements
+            .iter()
+            .filter_map(|e| e.intersect(ray).map(|d| Intersection::new(d, e)))
+            .min_by(|i1, i2| i1.distance.partial_cmp(&i2.distance).unwrap())
+    }
+
+    pub fn spheres() -> Scene {
+        let s_1 = Element::Sphere(Sphere {
+            center: Point::new(0.0, 0.0, -5.0),
+            radius: 2.0,
+            color: Color::new(0.4, 0.7, 0.4),
+        });
+        let s_2 = Element::Sphere(Sphere {
+            center: Point::new(-5.0, 1.0, -5.0),
+            radius: 1.0,
+            color: Color::new(0.4, 0.4, 0.7),
+        });
+        let s_3 = Element::Sphere(Sphere {
+            center: Point::new(5.0, 0.0, -5.0),
+            radius: 3.0,
+            color: Color::new(0.7, 0.4, 0.4),
+        });
+
+        Scene {
+            width: 800,
+            height: 600,
+            fov: 90.0,
+            elements: vec![s_1, s_2, s_3],
+            max_recursion_depth: 0,
+        }
     }
 }
