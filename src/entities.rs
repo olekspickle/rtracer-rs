@@ -208,6 +208,6 @@ impl Scene {
             let light_color = light.color * light_power * light_reflected;
             color = color + (*intersection.element.color() * light_color);
         }
-        color
+        color.clamp()
     }
 }
