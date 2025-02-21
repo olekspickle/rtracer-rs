@@ -65,31 +65,6 @@ impl Zero for Point {
     }
 }
 
-impl Default for Scene {
-    fn default() -> Scene {
-        let sphere1 = Element::Sphere(Sphere {
-            center: Point {
-                x: 0.0,
-                y: 0.0,
-                z: -5.0,
-            },
-            radius: 2.0,
-            color: Color {
-                red: 0.4,
-                green: 0.7,
-                blue: 0.4,
-            },
-        });
-
-        Scene {
-            width: 800,
-            height: 600,
-            fov: 90.0,
-            elements: vec![sphere1],
-        }
-    }
-}
-
 pub struct Intersection<'a> {
     pub distance: f64,
     pub object: &'a Sphere,
@@ -112,6 +87,7 @@ pub enum Element {
     Sphere(Sphere),
     Plane(Plane),
 }
+
 impl Element {
     pub fn color(&self) -> &Color {
         match *self {
@@ -119,4 +95,9 @@ impl Element {
             Element::Plane(ref p) => &p.color,
         }
     }
+}
+
+
+impl Color {
+    
 }
