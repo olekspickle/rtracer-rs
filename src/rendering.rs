@@ -1,4 +1,5 @@
 use crate::entities::{Point, Scene, Sphere};
+use image::{DynamicImage, GenericImage, Pixel, Rgba};
 use vek::Vec3;
 
 pub struct Ray {
@@ -15,7 +16,7 @@ impl Default for Ray {
     }
 }
 
-impl Ray{
+impl Ray {
     pub fn create_prime(x: u32, y: u32, scene: &Scene) -> Ray {
         let fov_adjustment = (scene.fov.to_radians() / 2.0).tan();
         // take non-quadratic images into account
@@ -23,7 +24,6 @@ impl Ray{
         let sensor_x =
             (((x as f64 + 0.5) / scene.width as f64) * 2.0 - 1.0 * aspect_ratio) * fov_adjustment;
         let sensor_y = 1.0 - ((y as f64 + 0.5) / scene.height as f64) * 2.0;
-
         Ray {
             origin: Point::zero(),
             direction: Vec3 {
@@ -55,5 +55,30 @@ impl Intersectable for Sphere {
         //pythagorean theorem
         //If that length-squared is less than radius squared, the ray intersects the sphere
         d2 < (self.radius * self.radius)
+    }
+}
+
+impl Scene {
+    pub fn render(&self) -> DynamicImage {
+        let mut image = DynamicImage::new_rgb8(self.width, self.height);
+        let background = Rgba::from_channels(0, 0, 0, 0);
+        let sphere_color = Rgba::from_channels(
+            self.sphere.color.red as u8,
+            self.sphere.color.green as u8,
+            self.sphere.color.blue as u8,
+            0,
+        );
+        for x in 0..self.width {
+            for y in 0..self.height {
+                let ray = Ray::create_prime(x, y, self);
+
+                if self.sphere.intersect(&ray) {
+                    image.put_pixel(x, y, sphere_color)
+                } else {
+                    image.put_pixel(x, y, background);
+                }
+            }
+        }
+        image
     }
 }
