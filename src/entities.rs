@@ -1,7 +1,7 @@
-use serde_derive::{Deserialize, Serialize};
-use num_traits::identities::Zero;
-use std::ops::{Add, Sub};
 use image::DynamicImage;
+use num_traits::identities::Zero;
+use serde_derive::{Deserialize, Serialize};
+use std::ops::{Add, Sub};
 use vek::Vec3;
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
