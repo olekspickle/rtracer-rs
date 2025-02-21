@@ -1,11 +1,17 @@
 use crate::{
     point::Point,
-    rendering::{Intersectable, Ray, BLACK},
+    rendering::{Intersectable, Ray, TextureCoords, BLACK},
     vector::Vector3,
 };
-use image::{DynamicImage, GenericImage, Pixel, Rgba};
-use serde_derive::{Deserialize, Serialize};
-use std::ops::{Mul, Add};
+use image::{DynamicImage, GenericImage, GenericImageView, Pixel, Rgba};
+use serde::{Deserialize, Deserializer};
+use serde_derive::Deserialize;
+
+use std::{
+    fmt,
+    ops::{Add, Mul},
+    path::PathBuf,
+};
 
 #[repr(C)]
 #[derive(Debug)]
@@ -16,7 +22,7 @@ pub struct ViewBlock {
     pub height: u32,
 }
 
-#[derive(Deserialize, Serialize, Clone, Copy, Debug)]
+#[derive(Deserialize, Clone, Copy, Debug)]
 pub struct Color {
     pub red: f32,
     pub green: f32,
@@ -79,6 +85,13 @@ impl Color {
             0,
         )
     }
+    pub fn from_rgba(rgba: Rgba<u8>) -> Color {
+        Color {
+            red: (rgba.0[0] as f32) / 255.0,
+            green: (rgba.0[1] as f32) / 255.0,
+            blue: (rgba.0[2] as f32) / 255.0,
+        }
+    }
     pub fn clamp(&self) -> Color {
         Color {
             red: self.red.min(1.0).max(0.0),
@@ -88,54 +101,82 @@ impl Color {
     }
 }
 
-pub enum Coloration {
-    Color(Color),
-    Texture(DynamicImage)
+pub fn load_texture<'a, D>(deserializer: D) -> Result<DynamicImage, D::Error>
+where
+    D: Deserializer<'a>,
+{
+    let path = PathBuf::deserialize(deserializer)?;
+    Ok(image::open(path).expect("Unable to open texture file"))
 }
 
-pub struct Material {
-    pub color: Coloration,
-    pub albedo: f32,
+#[derive(Deserialize)]
+pub enum Coloration {
+    Color(Color),
+    Texture(#[serde(deserialize_with = "load_texture")] DynamicImage),
+}
+impl fmt::Debug for Coloration {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Coloration::Color(ref c) => write!(f, "Color({:?})", c),
+            Coloration::Texture(_) => write!(f, "Texture"),
+        }
+    }
+}
+
+fn wrap(val: f32, bound: u32) -> u32 {
+    let signed_bound = bound as i32;
+    let float_coord = val * bound as f32;
+    let wrapped_coord = (float_coord as i32) % signed_bound;
+    if wrapped_coord < 0 {
+        (wrapped_coord + signed_bound) as u32
+    } else {
+        wrapped_coord as u32
+    }
 }
 
 impl Coloration {
-    pub fn color(&self, texture_coords: &TextureCoords) -> Color {
+    pub fn color(&self, coords: &TextureCoords) -> Color {
         match *self {
-            Coloration::Color(c) => c,
-            Coloration::Texture(tex) => {
-                Color {
-                    red: 0.0,
-                    blue: 0.0,
-                    green: 0.0,
-                }
+            Coloration::Color(ref c) => c.clone(),
+            Coloration::Texture(ref texture) => {
+                let tex_x = wrap(coords.x, texture.width());
+                let tex_y = wrap(coords.y, texture.height());
+
+                Color::from_rgba(texture.get_pixel(tex_x, tex_y))
             }
         }
     }
 }
 
+#[derive(Deserialize, Debug)]
+pub struct Material {
+    pub coloration: Coloration,
+    pub albedo: f32,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct Sphere {
     pub center: Point,
     pub radius: f64,
     pub material: Material,
 }
 
-
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct DirectionalLight {
-    #[serde(deserialize_with="Vector3::deserialize_normalized")]
+    #[serde(deserialize_with = "Vector3::deserialize_normalized")]
     pub direction: Vector3,
     pub color: Color,
     pub intensity: f32,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct SphericalLight {
     pub position: Point,
     pub color: Color,
     pub intensity: f32,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub enum Light {
     Directional(DirectionalLight),
     Spherical(SphericalLight),
@@ -184,29 +225,36 @@ impl<'a> Intersection<'a> {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct Plane {
     pub origin: Point,
     pub normal: Vector3,
     pub material: Material,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub enum Element {
     Sphere(Sphere),
     Plane(Plane),
 }
 
 impl Element {
-    pub fn material(&self) -> Material {
+    pub fn material(&self) -> &Material {
         match *self {
-            Element::Sphere(ref s) => s.material,
-            Element::Plane(ref p) => p.material,
+            Element::Sphere(ref s) => &s.material,
+            Element::Plane(ref p) => &p.material,
+        }
+    }
+
+    pub fn material_mut(&mut self) -> &mut Material {
+        match *self {
+            Element::Sphere(ref mut s) => &mut s.material,
+            Element::Plane(ref mut p) => &mut p.material,
         }
     }
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct Scene {
     pub width: u32,
     pub height: u32,
@@ -252,7 +300,8 @@ impl Scene {
     pub fn get_color(&self, ray: &Ray, intersection: &Intersection) -> Color {
         let hit_point = ray.origin + (ray.direction * intersection.distance);
         let surface_normal = intersection.element.surface_normal(&hit_point);
-        let material = intersection.element.material();
+        let texture_coords = intersection.element.texture_coords(&hit_point);
+
         let mut color = Color {
             red: 0.0,
             blue: 0.0,
@@ -260,20 +309,25 @@ impl Scene {
         };
         for light in &self.lights {
             let direction_to_light = light.direction_from(&hit_point);
-        
+
             let shadow_ray = Ray {
                 origin: hit_point + (direction_to_light * self.shadow_bias),
                 direction: direction_to_light,
             };
             let shadow_intersection = self.trace(&shadow_ray);
-            let in_light = shadow_intersection.is_none() ||
-            shadow_intersection.unwrap().distance > light.distance(&hit_point);
-            let light_intensity = if in_light { light.intensity(&hit_point) } else { 0.0 };
-            let light_power = (surface_normal.dot(&direction_to_light) as f32).max(0.0) *
-                              light_intensity;
+            let in_light = shadow_intersection.is_none()
+                || shadow_intersection.unwrap().distance > light.distance(&hit_point);
+            let light_intensity = if in_light {
+                light.intensity(&hit_point)
+            } else {
+                0.0
+            };
+            let material = intersection.element.material();
+            let light_power =
+                (surface_normal.dot(&direction_to_light) as f32).max(0.0) * light_intensity;
             let light_reflected = material.albedo / std::f32::consts::PI;
             let light_color = light.color() * light_power * light_reflected;
-            color = color + (material.color * light_color);
+            color = color + (material.coloration.color(&texture_coords) * light_color);
         }
         color.clamp()
     }

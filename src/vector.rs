@@ -23,7 +23,7 @@ impl <'de>Vector3 {
     }
 
     pub fn norm(&self) -> f64 {
-        (self.x * self.x + self.y * self.y + self.z * self.z)
+        self.x * self.x + self.y * self.y + self.z * self.z
     }
 
     pub fn normalize(&self) -> Vector3 {
