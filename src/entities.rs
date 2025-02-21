@@ -132,7 +132,7 @@ impl Default for Scene {
                     y: 0.0,
                     z: -5.0,
                 },
-                radius: 1.0,
+                radius: 2.0,
                 color: Color {
                     red: 0.4,
                     green: 0.7,
@@ -143,5 +143,31 @@ impl Default for Scene {
     }
 }
 
+pub struct Intersection<'a> {
+    pub distance: f64,
+    pub object: &'a Sphere,
+}
+impl<'a> Intersection<'a> {
+    pub fn new<'b>(distance: f64, object: &'b Sphere) -> Intersection<'b> {
+        Intersection { distance, object }
+    }
+}
 
+pub struct Plane {
+    pub p0: Point,
+    pub normal: Vec3<f64>,
+    pub color: Color,
+}
 
+pub enum Element {
+    Sphere(Sphere),
+    Plane(Plane),
+}
+impl Element {
+    pub fn color(&self) -> &Color {
+        match *self {
+            Element::Sphere(ref s) => &s.color,
+            Element::Plane(ref p) => &p.color,
+        }
+    }
+}
