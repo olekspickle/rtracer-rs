@@ -53,6 +53,7 @@ impl Intersectable for Element {
         }
     }
 }
+
 impl Intersectable for Plane {
     fn intersect(&self, ray: &Ray) -> Option<f64> {
         let normal = &self.normal;
@@ -67,6 +68,7 @@ impl Intersectable for Plane {
         None
     }
 }
+
 impl Intersectable for Sphere {
     fn intersect(&self, ray: &Ray) -> Option<f64> {
         //Create a line segment between the ray origin and the center of the sphere
@@ -100,12 +102,17 @@ impl Scene {
         let intersection = self.trace(&ray);
         intersection.map(|i| BLACK).unwrap_or(BLACK)
     }
-    pub fn render(&self, block: &ViewBlock) -> DynamicImage {
-        let mut image = DynamicImage::new_rgb8(block.width, block.height);
-        for y in 0..block.height {
-            for x in 0..block.width {
-                let ray = Ray::create_prime(x + block.x, y + block.y, self);
-                image.put_pixel(x, y, Self::cast_ray(self, &ray, 0).to_rgba());
+    pub fn render(scene: &Scene) -> DynamicImage {
+        let mut image = DynamicImage::new_rgb8(scene.width, scene.height);
+        let black = Rgba::from_channels(0, 0, 0, 0);
+        for x in 0..scene.width {
+            for y in 0..scene.height {
+                let ray = Ray::create_prime(x, y, scene);
+    
+                let intersection = scene.trace(&ray);
+                let color = intersection.map(|i| to_rgba(&i.object.color))
+                    .unwrap_or(black);
+                image.put_pixel(x, y, color);
             }
         }
         image
