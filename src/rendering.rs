@@ -37,7 +37,19 @@ pub trait Intersectable {
 }
 
 impl Intersectable for Sphere {
-    fn intersect(&self, ray: &Ray) -> bool {
-        false
+       fn intersect(&self, ray: &Ray) -> bool {
+        //Create a line segment between the ray origin and the center of the sphere
+        let l: Vec3<f64> = self.center - ray.origin;
+        //Use l as a hypotenuse and find the length of the adjacent side
+        let adj2 = l.dot(ray.direction);
+
+        //Find the length-squared of the opposite side
+        // dot(self, v: Vec3) -> (self * v).sum()
+        // sum(self) -> self.into_iter().sum()
+        // vek macros magic explained ^
+        let d2 = l.dot(l) - (adj2 * adj2);
+
+        //If that length-squared is less than radius squared, the ray intersects the sphere
+        d2 < (self.radius * self.radius)
     }
 }
