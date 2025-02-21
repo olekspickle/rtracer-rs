@@ -1,4 +1,4 @@
-use image::{DynamicImage, GenericImageView};
+use image::{DynamicImage};
 use std::path::Path;
 
 mod entities;
@@ -6,13 +6,14 @@ mod fractal;
 mod rendering;
 mod utils;
 
+#[allow(unused)]
 use entities::{Color, Point, Scene, Sphere};
 use fractal::Fractal;
 use utils::{print_green, print_italic};
 
 fn main() {
     let scene = Scene::default();
-    let img: DynamicImage = scene.render();
+    let img: DynamicImage = scene.render_simple_sphere();
     let f = Fractal::default();
 
     save_image(img, &Path::new("output/test_scene.png"));
@@ -36,13 +37,15 @@ pub fn test_save_image(img: DynamicImage, p: &Path) -> bool {
 }
 
 mod test {
-    #[allow(unused)]
+    #![allow(unused)]
     use super::*;
+    use image::{GenericImageView};
+
 
     #[test]
-    fn test_can_render_scene() {
+    fn test_can_render_simple_sphere() {
         let scene = Scene::default();
-        let img: DynamicImage = scene.render();
+        let img: DynamicImage = scene.render_simple_sphere();
         assert_eq!(scene.width, img.width());
         assert_eq!(scene.height, img.height());
 

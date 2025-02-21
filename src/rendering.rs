@@ -59,15 +59,16 @@ impl Intersectable for Sphere {
 }
 
 impl Scene {
-    pub fn render(&self) -> DynamicImage {
+    pub fn render_simple_sphere(&self) -> DynamicImage {
         let mut image = DynamicImage::new_rgb8(self.width, self.height);
         let background = Rgba::from_channels(0, 0, 0, 0);
         let sphere_color = Rgba::from_channels(
-            self.sphere.color.red as u8,
-            self.sphere.color.green as u8,
-            self.sphere.color.blue as u8,
+            (self.sphere.color.red * 255.0) as u8,
+            (self.sphere.color.green * 255.0) as u8,
+            (self.sphere.color.blue * 255.0) as u8,
             0,
         );
+        
         for x in 0..self.width {
             for y in 0..self.height {
                 let ray = Ray::create_prime(x, y, self);
